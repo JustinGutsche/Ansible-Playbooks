@@ -25,3 +25,8 @@
         user: ansible
         state: present
         key: "{{ lookup('file', '~/.ssh/ansible_id_rsa.pub') }}"
+    
+    - name: install qemu agent
+      ansible.builtin.package:
+        name: qemu-guest-agent
+        state: latest
