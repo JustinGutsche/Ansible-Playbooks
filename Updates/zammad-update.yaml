@@ -1,0 +1,55 @@
+---
+- hosts:
+  - ticketsystem
+  become: yes
+  tasks:
+    - name: stop zammad service
+      service:
+        name: zammad
+        state: stopped
+
+    - name: check if backup config exists
+      stat:
+        path: /opt/zammad/contrib/backup/config
+      register: p
+
+    - name: Backup Config Check - Result True
+      debug:
+        msg: Backup Config was found.
+      when: p.stat.exists
+    
+    - name: Backup Config Check - Result False
+      debug:
+        msg: Backup Config was not found! Trying to copy..
+      when: p.stat.exists == False
+
+    - name: copy backup config
+      copy:
+        src: /opt/zammad/contrib/config.dist
+        dest: /opt/zammad/contrib/config
+        remote_src: true
+      when: p.stat.exists == False
+    
+    - name: create zammad backup
+      shell: /opt/zammad/contrib/backup/zammad_backup.sh
+
+    - name: update zammad
+      apt:
+        name: "zammad"
+        state: latest
+        only_upgrade: true
+
+    - name: remove unwanted nginx config [sites-available]
+      file:
+        path: /etc/nginx/sites-available/zammad.conf
+        state: absent
+    - name: remove unwanted nginx config [sites-enabled]
+      file:
+        path: /etc/nginx/sites-enabled/zammad.conf
+        state: absent
+
+    - name: start nginx service
+      service:
+        name: nginx
+        state: started
+
