@@ -25,8 +25,8 @@
 
     - name: copy backup config
       copy:
-        src: /opt/zammad/contrib/config.dist
-        dest: /opt/zammad/contrib/config
+        src: /opt/zammad/contrib/backup/config.dist
+        dest: /opt/zammad/contrib/backup/config
         remote_src: true
       when: p.stat.exists == False
     
