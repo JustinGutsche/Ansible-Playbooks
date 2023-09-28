@@ -1,0 +1,27 @@
+#This playbook needs an user with sudo or root. For example:
+#
+# ansible-playbook add_public_keys.yaml -u justin -k -K
+
+---
+- hosts: 
+  - all
+  become: yes
+  tasks:
+    - name: create user
+      ansible.builtin.user:
+        name: ansible
+        comment: Ansible user
+        groups: "sudo"
+        append: yes
+    - name: edit sudoers file
+      lineinfile:
+        path: /etc/sudoers
+        line: 'ansible ALL=(ALL) NOPASSWD: ALL'
+        create: yes
+        validate: /usr/sbin/visudo -cf %s
+
+    - name: install public keys
+      ansible.posix.authorized_key:
+        user: ansible
+        state: present
+        key: "{{ lookup('file', '~/.ssh/ansible_id_rsa.pub') }}"
