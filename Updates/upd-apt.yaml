@@ -18,6 +18,8 @@
       when: ansible_pkg_mgr == 'apt'
       apt:
         upgrade: dist
+        autoremove: yes
+        purge: yes
 
     - name: Upgrade packages with yum
       when: ansible_pkg_mgr == 'yum'
