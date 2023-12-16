@@ -1,0 +1,8 @@
+---
+- hosts:
+  - all,!netboot
+  become: yes
+  tasks:
+    - name: change nameserver
+      command: sed -i "s/nameserver 10.0.0.1/nameserver 10.0.0.114/g" /etc/resolv.conf
+

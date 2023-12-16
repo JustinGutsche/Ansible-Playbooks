@@ -1,0 +1,9 @@
+---
+- hosts:
+  - all
+  become: yes
+  tasks:
+    - name: install zsh
+      ansible.builtin.package:
+        name: zsh
+        state: latest
