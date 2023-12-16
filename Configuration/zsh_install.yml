@@ -1,9 +1,46 @@
+ #EXAMPLE RUN: ansible-playbook zsh_install.yml --extra-vars "user=justin"
+
 ---
 - hosts:
   - all
   become: yes
+  vars:
+    user: "{{ user }}"
   tasks:
+    - name: install git
+      ansible.builtin.package:
+        name: git
+        state: present
     - name: install zsh
       ansible.builtin.package:
         name: zsh
         state: latest
+    - name: download oh-my-zsh
+      ansible.builtin.get_url:
+        url: https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh
+        dest: /opt/zsh_install.sh
+        mode: '777'
+    - name: start install script oh-my-zsh
+      ansible.builtin.shell: /opt/zsh_install.sh --unattended
+    - name: download kali linux .zshrc
+      ansible.builtin.get_url:
+        url: https://gitlab.com/kalilinux/packages/kali-defaults/-/raw/kali/master/etc/skel/.zshrc?inline=false
+        dest: /opt/.zshrc
+        mode: '777'
+    - name: copy .zshrc to {{ user }} user
+      ansible.builtin.copy:
+        src: /opt/.zshrc
+        remote_src: yes
+        dest: /home/{{ user }}/.zshrc
+        owner: "{{ user }}"
+        group: "{{ user }}"
+        mode: '0644'
+        backup: yes
+    - name: change user shell to zsh
+      user:
+        name: "{{ user }}"
+        shell: /bin/zsh
+    - name: remove zsh_install.sh
+      ansible.builtin.file:
+        path: /opt/zsh_install.sh
+        state: absent
