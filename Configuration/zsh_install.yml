@@ -1,46 +1,48 @@
- #EXAMPLE RUN: ansible-playbook zsh_install.yml --extra-vars "user=justin"
+ # EXAMPLE RUN: ansible-playbook zsh_install.yml --extra-vars "user=justin"
 
 ---
-- hosts:
-  - all
-  become: yes
+- name: Install ZSH with .zshrc file
+  hosts: all
+  become: true
   vars:
     user: "{{ user }}"
   tasks:
-    - name: install git
+    - name: Install git
       ansible.builtin.package:
         name: git
         state: present
-    - name: install zsh
+    - name: Install zsh
       ansible.builtin.package:
         name: zsh
         state: latest
-    - name: download oh-my-zsh
+    - name: Download oh-my-zsh
       ansible.builtin.get_url:
         url: https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh
         dest: /opt/zsh_install.sh
         mode: '777'
-    - name: start install script oh-my-zsh
-      ansible.builtin.shell: /opt/zsh_install.sh --unattended
-    - name: download kali linux .zshrc
+    - name: Start install script oh-my-zsh
+      ansible.builtin.command: /opt/zsh_install.sh --unattended
+      register: install_output
+      changed_when: install_output != 0
+    - name: Download kali linux .zshrc
       ansible.builtin.get_url:
         url: https://gitlab.com/kalilinux/packages/kali-defaults/-/raw/kali/master/etc/skel/.zshrc?inline=false
         dest: /opt/.zshrc
         mode: '777'
-    - name: copy .zshrc to {{ user }} user
+    - name: Copy .zshrc to {{ user }}
       ansible.builtin.copy:
         src: /opt/.zshrc
-        remote_src: yes
+        remote_src: true
         dest: /home/{{ user }}/.zshrc
         owner: "{{ user }}"
         group: "{{ user }}"
         mode: '0644'
-        backup: yes
-    - name: change user shell to zsh
-      user:
+        backup: true
+    - name: Change user shell to zsh
+      ansible.builtin.user:
         name: "{{ user }}"
         shell: /bin/zsh
-    - name: remove zsh_install.sh
+    - name: Remove zsh_install.sh
       ansible.builtin.file:
         path: /opt/zsh_install.sh
         state: absent
