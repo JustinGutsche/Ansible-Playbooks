@@ -1,8 +1,10 @@
 ---
-- hosts:
-  - all,!netboot
-  become: yes
+- name: Edit all nameservers to a specific one.
+  hosts: all,!netboot
+  become: true
   tasks:
-    - name: change nameserver
-      command: sed -i "s/nameserver 10.0.0.1/nameserver 10.0.0.114/g" /etc/resolv.conf
-
+    - name: Change nameserver
+      ansible.builtin.replace:
+        path: /etc/resolv.conf
+        regexp: 'nameserver 10.0.0.1.*'
+        replace: 'nameserver 10.0.0.114'
